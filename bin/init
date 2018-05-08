@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+const path = require('path')
+
+const pretty = require('pretty-error')
+const consola = require('consola')
+const ora = require('ora')
+const sao = require('sao')
+
+const log = consola.withScope('F3 init')
+
+const template = path.resolve( path.join(__dirname, '../../template-app') )
+
+const targetPath = path.resolve( process.argv[2] ? path.join(process.cwd(), process.argv[2]) : process.cwd() )
+
+const spinner = ora()
+sao.on('download:start', () => {
+	spinner.text = 'Downloading Dependencies..'
+	spinner.start()
+})
+sao.on('download:stop', () => { spinner.stop() })
+sao.on('install-template:start', () => { log.start('Installing ...')})
+
+async function run() {
+	const options = { template, targetPath }
+	try {
+		await sao(options)
+		log.success('Initialized!')
+	} catch (err) {
+		log.error(`\n` + (new pretty()).render(err))
+	}
+}
+
+run()
