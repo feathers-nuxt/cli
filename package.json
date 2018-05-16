@@ -30,6 +30,7 @@
     "pretty-error": "^2.1.1",
     "ramda": "^0.25.0",
     "sao": "^0.22.17",
+    "shelljs": "^0.8.2",
     "source-map-support": "^0.5.5",
     "webpack": "^4.7.0",
     "webpack-dashboard": "^1.1.1",
