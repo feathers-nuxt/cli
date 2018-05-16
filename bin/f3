@@ -51,7 +51,7 @@ const startProcess = () => {
 		stdio: 'inherit'
 	})
 	proc.on('close', (code) => {
-		log.error('exit with code', code)
+		log.success('Command completed')
 		process.exit(code)
 	})
 	proc.on('error', (err) => {
