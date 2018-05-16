@@ -5,8 +5,6 @@ const path = require('path')
 const fs = require('fs')
 const sh = require('shelljs')
 
-const storyboard = require('storyboard')
-
 const defaultConfig = require('../config/backpack.config')
 
 const options = {
