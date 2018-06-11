@@ -10,27 +10,27 @@ const pretty = require('pretty-error')
 
 const pkg = require('../package.json')
 
-const log = consola.withScope('F3 CLI')
+const log = consola.withScope('f3')
 
 // console.log(Object.keys(log))
 
 const defaultCommand = 'init'
 const commands = new Set([ defaultCommand, 'dev', 'start', 'build', 'build-client',  'build-server', 'remote', 'deploy' ])
 
-let cmd = process.argv[2]
+let cmd = process.argv[2] || '--help'
 let args
 
 if (new Set(['--version', '-v']).has(cmd)) {
-	log.ready(`\n\t version ${pkg.version}`)
+	log.ready(`version ${pkg.version}`)
 	process.exit(0)
 }
 
 if(new Set(['--help', '-h']).has(cmd)) {
-	log.info(`${chalk.yellow(' fullstack feathers framework ')} 
+log.ready(`${chalk.yellow(' fullstack feathers framework ')} 
 ${chalk.white(' Usage ')}
-	${chalk.white('$ f3 <command>')}
+  ${chalk.white('$ f3 <command>')}
 ${chalk.cyan(' Avalable commands')}
-	${chalk.blue(Array.from(commands).join(' '))}
+  ${chalk.blue(Array.from(commands).join(' '))}
 
 ${chalk.gray('For more information run a command with the --help flag')}
 	`)
