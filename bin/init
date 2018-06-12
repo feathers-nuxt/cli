@@ -9,9 +9,9 @@ const sao = require('sao')
 
 const log = consola.withScope('init')
 
-// const template = path.resolve( path.join(__dirname, '../../template-app') )
 const template =  'feathers-nuxt/template-app'
 
+// put new project in current dir if no path provided else use path relative to cwd
 const targetPath = path.resolve( process.argv[2] ? path.join(process.cwd(), process.argv[2]) : process.cwd() )
 
 const spinner = ora()
@@ -27,6 +27,11 @@ async function run() {
 	try {
 		await sao(options)
 		log.success('Initialized!')
+		consola.log(`
+Next Steps:
+	cd ${targetPath}
+	yarn dev
+		`)
 	} catch (err) {
 		log.error(`\n` + (new pretty()).render(err))
 	}
