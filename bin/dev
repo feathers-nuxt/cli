@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+
 const pretty = require('pretty-error')
 const once = require('ramda').once
 const webpack = require('webpack')

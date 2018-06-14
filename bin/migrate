@@ -1,0 +1,232 @@
+#! /usr/bin/env node
+
+const child_process = require('child_process');
+const Sequelize = require('sequelize');
+const Umzug = require('umzug');
+
+const prettyjson = require('prettyjson');
+
+const path = require('path');
+
+const consola = require('consola');
+const log = consola.withScope('migrate');
+
+
+// read in server config options using node-config package
+const configPath = path.resolve('src/server/config');
+process.env['NODE_CONFIG_DIR'] = configPath
+const config = require('config');
+
+const DB_NAME = config.get('database.sequelize.database');
+const DB_USER = config.get('database.sequelize.username');
+const DB_PASS = config.get('database.sequelize.password');
+
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, config.get('database.sequelize'));
+
+const umzug = new Umzug({
+    storage: 'sequelize',
+    storageOptions: {
+        sequelize: sequelize,
+    },
+
+    // see: https://github.com/sequelize/umzug/issues/17
+    migrations: {
+        params: [
+            sequelize.getQueryInterface(), // queryInterface
+            sequelize.constructor, // DataTypes
+            function() {
+                throw new Error('Migration tried to use old style "done" callback. Please upgrade to "umzug" and return a promise instead.');
+            }
+        ],
+        path: path.resolve('src/server/db/migrations'),
+        pattern: /\.js$/
+    },
+
+    logging: function() {
+        consola.log('arguments', arguments)
+        log.info.apply(null, arguments);
+    },
+});
+
+
+function logUmzugEvent(level, eventName) {
+    return function(name, migration) {
+        log[level](`${ name } ${ eventName }`);
+    }
+}
+
+umzug.on('migrating', logUmzugEvent('start', 'migrating'));
+umzug.on('migrated',  logUmzugEvent('success', 'migrated'));
+umzug.on('reverting', logUmzugEvent('start', 'reverting'));
+umzug.on('reverted',  logUmzugEvent('success', 'reverted'));
+
+function cmdStatus() {
+    let result = {};
+
+    return umzug.executed()
+      .then(executed => {
+        result.executed = executed;
+        return umzug.pending();
+       })
+      .then(pending => {
+        result.pending = pending;
+        return result;
+       })
+      .then(({ executed, pending }) => {
+
+        executed = executed.map(m => {
+            m.name = path.basename(m.file, '.js');
+            return m;
+        });
+        pending = pending.map(m => {
+            m.name = path.basename(m.file, '.js');
+            return m;
+        });
+
+        const current = executed.length > 0 ? executed[0].file : '<NO_MIGRATIONS>';
+        const status = {
+            status: {
+                current: current,
+                executed: executed.map(m => m.file),
+                pending: pending.map(m => m.file),
+            }
+        }
+
+        log.log( prettyjson.render(status, { noColor: false }) );
+
+        return { executed, pending };
+    })
+}
+
+function cmdMigrate() {
+    return umzug.up();
+}
+
+function cmdMigrateNext() {
+    return cmdStatus()
+        .then(({ executed, pending }) => {
+            if (pending.length === 0) {
+                return Promise.reject(new Error('No pending migrations'));
+            }
+            const next = pending[0].name;
+            return umzug.up({ to: next });
+        })
+}
+
+function cmdReset() {
+    return umzug.down({ to: 0 });
+}
+
+function cmdResetPrev() {
+    return cmdStatus()
+        .then(({ executed, pending }) => {
+            if (executed.length === 0) {
+                return Promise.reject(new Error('Already at initial state'));
+            }
+            const prev = executed[executed.length - 1].name;
+            return umzug.down({ to: prev });
+        })
+}
+
+function cmdHardReset() {
+    return new Promise((resolve, reject) => {
+        setImmediate(() => {
+            try {
+                log.info(`dropdb ${ DB_NAME }`);
+                child_process.spawnSync(`dropdb ${ DB_NAME }`);
+                log.info(`createdb ${ DB_NAME } --username ${ DB_USER }`);
+                child_process.spawnSync(`createdb ${ DB_NAME } --username ${ DB_USER }`);
+                resolve();
+            } catch (e) {
+                log.error(e);
+                reject(e);
+            }
+        });
+    });
+}
+
+function cmdHelp() {
+  const help = {
+    ['Available commands']: [
+        {status: 'print current migration status'},
+        {up: 'executed all unexecuted migrations'},
+        {down: 'revert all executed migrations'},
+        {next: 'execute the next pending migration'},
+        {prev: 'revert the previous executed migration'},
+        {reset: 'reset the database using a dropdb/createdb postgres command'},
+    ]
+  }
+
+  return new Promise((resolve, reject) => {
+    setImmediate(() => {
+        try {
+            log.ready(`${prettyjson.render(help, { noColor: false })}`);
+            resolve();
+        } catch (e) {
+            log.error(e);
+            reject(e);
+        }
+    });
+});
+}
+
+const cmd = process.argv[2] && process.argv[2].trim();
+let executedCmd;
+
+
+switch(cmd) {
+    case 'status':
+        executedCmd = cmdStatus();
+        break;
+
+    case 'up':
+    case 'migrate':
+        executedCmd = cmdMigrate();
+        break;
+
+    case 'next':
+    case 'migrate-next':
+        executedCmd = cmdMigrateNext();
+        break;
+
+    case 'down':
+    case 'reset':
+        executedCmd = cmdReset();
+        break;
+
+    case 'prev':
+    case 'reset-prev':
+        executedCmd = cmdResetPrev();
+        break;
+
+    case 'reset':
+        executedCmd = cmdHardReset();
+        break;
+
+    default:
+        log.warn(`invalid cmd!`);
+        executedCmd = cmdHelp();
+}
+
+if(cmd) log.ready(`${ cmd.toUpperCase() } BEGIN`);
+
+executedCmd
+    .then((result) => {
+        const doneStr = cmd ? `${ cmd.toUpperCase() } DONE` : ' DONE';
+        log.success(doneStr);
+        log.success("=".repeat(doneStr.length));
+    })
+    .catch(err => {
+        const errorStr = cmd ? `${ cmd.toUpperCase() } ERROR` : 'Unknown ERROR';
+        log.error(errorStr);
+        log.error("=".repeat(errorStr.length));
+        log.error(err);
+        log.error("=".repeat(errorStr.length));
+    })
+    .then(() => {
+        if (cmd !== 'status' && cmd !== 'reset-hard') {
+            return cmdStatus()
+        }
+        return Promise.resolve();
+    })
+    .then(() => process.exit(0))

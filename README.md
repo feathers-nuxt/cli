@@ -9,13 +9,15 @@ At the moment the package isn't published to `npm` so you'd install from [github
 
 > `npm i -g https://github.com/feathers-nuxt/cli`
 
+In this guide, yarn is used in place of `npm` but you may use the later if you so prefer.
+
 #### Initialization
 To start a new `feathers-nuxt` project using `f3` cli, just invoke the following on your terminal
 > `f3 init awesome-project`
 
 This will fetch the [feathers-nuxt/template-app](https://github.com/feathers-nuxt/template-app) from github using [saojs](https://github.com/saojs/sao) and create a boilerplate, inside `awesome-project` directory, customized as per your answers to the prompted questions.
 
-See the wiki for available customization options.
+See the wiki for available customization options. One of the options is the ORM prefered - either sequelize (_if you prefer SQL database_) or Mongoose (_the only NoSQL database supported for now_) database. Any database that works with feathers may be used, but for the ORM, only sequelize dialects are supported in the case of SQL and MongoDB for the case of NoSQL.
 
 #### Configuration
 If you have worked with a `nuxt` project before, an `f3` project should feel familiar. The only considerable difference is that configuration for `nuxt` is specified inside `f3.config.js` which exports an object with two keys. `nuxt` is one of these keys and its value is anything you would export from `nuxt.config.js`. The other key is `backpack` and its value is the equivalent of what one would export from `backpack.config.js`. 
@@ -29,6 +31,11 @@ The new project will have other `npm script` declarations in its `package.json` 
 
 #### Building
 Building is necessary to compile `livescript` and `ecmascript` sources to `javascript` in order to run the application in production mode. `f3` will invoke `nuxt` to compile frontend code and `backpack` to compile backend code. To build the project, invoke `yarn build` from within the project directory. Invoke `yarn build-client` if you need to compile frontend code only or `yarn build-server` if you need to compile need backend code only.
+
+#### Migrations
+When using Mongoose ORM, migrations may not be necessary (or maybe they are?). However with Sequelize, migrations are crucial. Invoke `yarn migrate` in your project root to see migrations status. `yarn migrate up` will execute *ALL* pending migrations. `yarn migrate down` will undo *ALL* completed migrations. `yarn migrate next` will execute the *NEXT* pending migration.
+
+`f3` will look for migrations files are under `src\db\migrations` directory. They will be run in the order they appear. A good practice is to prefix the file name with a two digit number so that you retain control over the order of the files in the directory. Otherwise they will be ordered alphabetically. This may be an issue when you have a migration that should create a table which is to be later referenced by another migration creating a foreign key constraint.
 
 #### Deployment
 `f3` uses `git push` to deploy. You need to first set up the deployment server by installing `node.js` and [pod](https://github.com/yyx990803/pod) among other dependencies. 

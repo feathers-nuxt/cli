@@ -20,3 +20,4 @@ jspm_packages
 dist
 webpack.js
 package-lock.json
+yarn.lock

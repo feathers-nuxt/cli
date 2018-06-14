@@ -2,20 +2,29 @@
 
 const path = require('path')
 
-const chalk = require('chalk')
+// const chalk = require('chalk')
 const consola = require('consola')
 const spawn = require('cross-spawn')
 const pretty = require('pretty-error')
-
 
 const pkg = require('../package.json')
 
 const log = consola.withScope('f3')
 
-// console.log(Object.keys(log))
+global.consola = consola
 
-const defaultCommand = 'init'
-const commands = new Set([ defaultCommand, 'dev', 'start', 'build', 'build-client',  'build-server', 'remote', 'deploy' ])
+const defaultCommand = 'dev'
+const commands = new Set([ 
+	defaultCommand, 
+	'dev', 
+	'build', 
+	'build-client',  
+	'build-server', 
+	'start', 
+	'migrate',
+	'remote', 
+	'deploy' 
+])
 
 let cmd = process.argv[2] || '--help'
 let args
@@ -51,7 +60,7 @@ const startProcess = () => {
 		stdio: 'inherit'
 	})
 	proc.on('close', (code) => {
-		log.success('Command completed')
+		log.success(`${cmd} done!`)
 		process.exit(code)
 	})
 	proc.on('error', (err) => {
