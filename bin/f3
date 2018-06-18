@@ -2,7 +2,7 @@
 
 const path = require('path')
 
-// const chalk = require('chalk')
+const chalk = require('chalk')
 const consola = require('consola')
 const spawn = require('cross-spawn')
 const pretty = require('pretty-error')
@@ -23,7 +23,8 @@ const commands = new Set([
 	'start', 
 	'migrate',
 	'remote', 
-	'deploy' 
+	'deploy',
+	'seed'
 ])
 
 let cmd = process.argv[2] || '--help'
@@ -60,7 +61,11 @@ const startProcess = () => {
 		stdio: 'inherit'
 	})
 	proc.on('close', (code) => {
-		log.success(`${cmd} done!`)
+		if (code) {
+			log.fatal(`${cmd} failed!`)			
+		} else {
+			log.success(`${cmd} done!`)	
+		}
 		process.exit(code)
 	})
 	proc.on('error', (err) => {

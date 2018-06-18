@@ -43,8 +43,7 @@ const umzug = new Umzug({
     },
 
     logging: function() {
-        consola.log('arguments', arguments)
-        log.info.apply(null, arguments);
+        //log.info.apply(null, arguments);
     },
 });
 

@@ -1,0 +1,47 @@
+#!node_modules/livescript/bin/lsc
+
+fs = require 'fs'
+path = require 'path'
+
+consola = require 'consola'
+log = consola.withScope 'seed'
+
+# https://docs.feathersjs.com/api/configuration.html
+configPath = path.resolve 'src/server/config'
+process.env['NODE_CONFIG_DIR'] = configPath
+
+apiPath = path.resolve 'src/server/api.ls'
+seederPath = path.resolve 'src/server/db/seed.ls'
+migrationsDir = path.resolve 'src/server/db/migrations'
+
+
+if not fs.existsSync apiPath
+	log.fatal "could not find api.ls in #{apiPath}"
+	process.exit 1
+else
+	if not fs.existsSync seederPath
+		log.fatal "could not find seed.ls in #{seederPath}"
+		process.exit 1
+	else
+		if not fs.existsSync migrationsDir
+			log.fatal "could not migrations in #{migrationsDir}"
+			process.exit 1
+		else	
+			seeder = require seederPath
+			app = require apiPath
+
+			# creates resource(s) with given service	
+			assert = (endpoint, resources) ->> 
+				service = app.service endpoint
+				existing = await service.find!
+				if existing.total then existing.data else service.create resources
+
+			# hash map of seeds defined within migrations
+			seeds = fs.readdirSync(migrationsDir).reduce ((acc, file) ->
+				filepath = path.resolve "src/server/db/migrations/#{file}"
+				filename = ( ( (file.split '-')[1] ).split '.' )[0]
+				acc[filename] = (require filepath).seed
+				delete acc[filename] if not acc[filename] 
+				acc), {}
+
+			seeder app, assert, seeds
