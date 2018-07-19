@@ -1,7 +1,7 @@
 {
   "name": "@feathers-nuxt/cli",
   "version": "1.0.0",
-  "description": "",
+  "description": "command line utility for working with feathers+nuxt applications at scale",
   "main": "index.js",
   "bin": {
     "f3": "./bin/f3"
@@ -9,7 +9,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "feathers", "nuxt", "cli", "fullstack", "f3", "webpack", "backpack", "scripts"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

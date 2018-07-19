@@ -7,7 +7,7 @@ It provides tasks such as scaffolding, live reloading, database migration, datab
 #### Installation
 At the moment the package isn't published to `npm` so you'd install from [github](https://github.com/feathers-nuxt/cli). Just run: 
 
-> `npm i -g https://github.com/feathers-nuxt/cli`
+> `npm i -g @feathers-nuxt/cli`
 
 In this guide, yarn is used in place of `npm` but you may use the later if you so prefer.
 
