@@ -5,11 +5,12 @@ Fullstack Feathers Framework
 It provides tasks such as scaffolding, live reloading, database migration, database seeding, deployment among others. See the [wiki](https://github.com/feathers-nuxt/cli/wiki) for guides.
 
 #### Installation
-At the moment the package isn't published to `npm` so you'd install from [github](https://github.com/feathers-nuxt/cli). Just run: 
 
-> `npm i -g @feathers-nuxt/cli`
+```bash
+npm i -g @feathers-nuxt/cli
+```
 
-In this guide, yarn is used in place of `npm` but you may use the later if you so prefer.
+The rest of this guide, uses yarn in place of `npm` but you may use the later if you so prefer.
 
 #### Initialization
 To start a new `feathers-nuxt` project using `f3` cli, just invoke the following on your terminal
