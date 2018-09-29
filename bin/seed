@@ -28,20 +28,22 @@ else
 			process.exit 1
 		else	
 			seeder = require seederPath
-			app = require apiPath
+			# app = require apiPath
+			api = require apiPath
+			api.ready.then (app) ->
+				console.log '<<<<<<<<<<<<<<<<<' app.services
+				# creates resource(s) with given service	
+				assert = (endpoint, resources) ->> 
+					service = app.service endpoint
+					existing = await service.find!
+					if existing.total then existing.data else service.create resources
 
-			# creates resource(s) with given service	
-			assert = (endpoint, resources) ->> 
-				service = app.service endpoint
-				existing = await service.find!
-				if existing.total then existing.data else service.create resources
+				# hash map of seeds defined within migrations
+				seeds = fs.readdirSync(migrationsDir).reduce ((acc, file) ->
+					filepath = path.resolve "src/server/db/migrations/#{file}"
+					filename = ( ( (file.split '-')[1] ).split '.' )[0]
+					acc[filename] = (require filepath).seed
+					delete acc[filename] if not acc[filename] 
+					acc), {}
 
-			# hash map of seeds defined within migrations
-			seeds = fs.readdirSync(migrationsDir).reduce ((acc, file) ->
-				filepath = path.resolve "src/server/db/migrations/#{file}"
-				filename = ( ( (file.split '-')[1] ).split '.' )[0]
-				acc[filename] = (require filepath).seed
-				delete acc[filename] if not acc[filename] 
-				acc), {}
-
-			seeder app, assert, seeds
+				seeder app, assert, seeds
