@@ -31,7 +31,6 @@ else
 			# app = require apiPath
 			api = require apiPath
 			api.ready.then (app) ->
-				console.log '<<<<<<<<<<<<<<<<<' app.services
 				# creates resource(s) with given service	
 				assert = (endpoint, resources) ->> 
 					service = app.service endpoint

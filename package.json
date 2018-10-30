@@ -29,9 +29,9 @@
   "license": "ISC",
   "dependencies": {
     "@babel/core": "^7.1.2",
+    "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
     "babel-loader": "^8.0.4",
-    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-backpack": "^0.7.0",
     "bourbon": "^5.1.0",
     "chalk": "1.1.3",
