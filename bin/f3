@@ -76,4 +76,6 @@ const startProcess = () => {
 	return proc
 }
 
+process.on('SIGINT', () => { console.log("Bye bye!"); process.exit(); });
+
 const proc = startProcess()
