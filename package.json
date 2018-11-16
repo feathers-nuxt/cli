@@ -1,6 +1,6 @@
 {
   "name": "@feathers-nuxt/cli",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "command line utility for working with feathers+nuxt apps at scale",
   "homepage": "http://feathers-nuxt.netlify.com/",
   "repository": {
